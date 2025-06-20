@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Package, Plus, Filter } from 'lucide-react';
+import { Search, Package, Filter } from 'lucide-react';
 import { InventoryItem } from '@/types';
+import { AddItemModal } from './AddItemModal';
 
 const mockInventoryItems: InventoryItem[] = [
   {
@@ -114,10 +114,7 @@ export const InventoryList: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">Inventory Management</h1>
           <p className="text-slate-600 mt-2">Track and manage your warehouse inventory</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Item
-        </Button>
+        <AddItemModal />
       </div>
 
       <Card>

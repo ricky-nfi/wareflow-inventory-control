@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, ClipboardList, Plus, Filter, Truck } from 'lucide-react';
+import { Search, ClipboardList, Filter, Truck } from 'lucide-react';
 import { Order } from '@/types';
+import { CreateOrderModal } from './CreateOrderModal';
 
 const mockOrders: Order[] = [
   {
@@ -103,10 +103,7 @@ export const OrdersList: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">Order Management</h1>
           <p className="text-slate-600 mt-2">Track and process warehouse orders</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Order
-        </Button>
+        <CreateOrderModal />
       </div>
 
       <Card>

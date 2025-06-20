@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Users, Plus, Filter, TrendingUp } from 'lucide-react';
+import { Search, Users, Filter, TrendingUp } from 'lucide-react';
 import { Worker } from '@/types';
+import { AddWorkerModal } from './AddWorkerModal';
 
 const mockWorkers: Worker[] = [
   {
@@ -108,10 +108,7 @@ export const WorkersList: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">Worker Management</h1>
           <p className="text-slate-600 mt-2">Manage warehouse staff and performance</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Worker
-        </Button>
+        <AddWorkerModal />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
