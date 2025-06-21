@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { LoginForm } from '@/components/LoginForm';
+import { AuthPage } from '@/components/Auth/AuthPage';
 import { Sidebar } from '@/components/Layout/Sidebar';
 import { Dashboard } from '@/components/Dashboard/Dashboard';
 import { InventoryList } from '@/components/Inventory/InventoryList';
@@ -11,11 +11,19 @@ import { Analytics } from '@/components/Analytics/Analytics';
 import { Settings } from '@/components/Settings/Settings';
 
 const WMSApp: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
 
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   if (!user) {
-    return <LoginForm />;
+    return <AuthPage />;
   }
 
   const renderCurrentPage = () => {

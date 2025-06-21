@@ -9,7 +9,197 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      inventory_items: {
+        Row: {
+          category: string
+          created_at: string | null
+          current_stock: number
+          description: string | null
+          id: string
+          item_code: string
+          last_updated: string | null
+          location: string
+          method: string | null
+          min_stock_level: number
+          name: string
+          unit_price: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          current_stock?: number
+          description?: string | null
+          id?: string
+          item_code: string
+          last_updated?: string | null
+          location: string
+          method?: string | null
+          min_stock_level?: number
+          name: string
+          unit_price?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          current_stock?: number
+          description?: string | null
+          id?: string
+          item_code?: string
+          last_updated?: string | null
+          location?: string
+          method?: string | null
+          min_stock_level?: number
+          name?: string
+          unit_price?: number
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_id: string
+          order_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_id: string
+          order_id: string
+          quantity: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          order_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          assigned_worker_id: string | null
+          created_at: string | null
+          id: string
+          order_number: string
+          status: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_worker_id?: string | null
+          created_at?: string | null
+          id?: string
+          order_number: string
+          status?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_worker_id?: string | null
+          created_at?: string | null
+          id?: string
+          order_number?: string
+          status?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_assigned_worker_id_fkey"
+            columns: ["assigned_worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          role: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          is_active?: boolean | null
+          role?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      workers: {
+        Row: {
+          accuracy: number | null
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          name: string
+          orders_processed: number | null
+          position: string
+          productivity: number | null
+          shift: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          orders_processed?: number | null
+          position: string
+          productivity?: number | null
+          shift?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          orders_processed?: number | null
+          position?: string
+          productivity?: number | null
+          shift?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

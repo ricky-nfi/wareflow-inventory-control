@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -5,93 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Users, Filter, TrendingUp } from 'lucide-react';
-import { Worker } from '@/types';
 import { AddWorkerModal } from './AddWorkerModal';
-
-const mockWorkers: Worker[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john.smith@warehouse.com',
-    position: 'Senior Warehouse Associate',
-    performance: {
-      ordersProcessed: 156,
-      accuracy: 98.5,
-      productivity: 95.2
-    },
-    isActive: true,
-    shift: 'Morning (6AM-2PM)'
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@warehouse.com',
-    position: 'Warehouse Associate',
-    performance: {
-      ordersProcessed: 142,
-      accuracy: 96.8,
-      productivity: 88.7
-    },
-    isActive: true,
-    shift: 'Afternoon (2PM-10PM)'
-  },
-  {
-    id: '3',
-    name: 'Mike Davis',
-    email: 'mike.davis@warehouse.com',
-    position: 'Forklift Operator',
-    performance: {
-      ordersProcessed: 89,
-      accuracy: 99.1,
-      productivity: 92.3
-    },
-    isActive: true,
-    shift: 'Morning (6AM-2PM)'
-  },
-  {
-    id: '4',
-    name: 'Lisa Chen',
-    email: 'lisa.chen@warehouse.com',
-    position: 'Warehouse Associate',
-    performance: {
-      ordersProcessed: 134,
-      accuracy: 97.2,
-      productivity: 91.5
-    },
-    isActive: true,
-    shift: 'Night (10PM-6AM)'
-  },
-  {
-    id: '5',
-    name: 'Robert Brown',
-    email: 'robert.brown@warehouse.com',
-    position: 'Team Lead',
-    performance: {
-      ordersProcessed: 98,
-      accuracy: 98.9,
-      productivity: 93.8
-    },
-    isActive: false,
-    shift: 'Morning (6AM-2PM)'
-  }
-];
+import { useWorkers } from '@/hooks/useWorkers';
 
 export const WorkersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredWorkers, setFilteredWorkers] = useState(mockWorkers);
+  const { workers, isLoading } = useWorkers();
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    const filtered = mockWorkers.filter(worker =>
-      worker.name.toLowerCase().includes(term.toLowerCase()) ||
-      worker.email.toLowerCase().includes(term.toLowerCase()) ||
-      worker.position.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredWorkers(filtered);
-  };
+  const filteredWorkers = workers.filter(worker =>
+    worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    worker.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    worker.position.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const getPerformanceScore = (performance: Worker['performance']) => {
-    return ((performance.accuracy + performance.productivity) / 2).toFixed(1);
+  const getPerformanceScore = (accuracy: number, productivity: number) => {
+    return ((accuracy + productivity) / 2).toFixed(1);
   };
 
   const getPerformanceBadge = (score: number) => {
@@ -100,6 +29,25 @@ export const WorkersList: React.FC = () => {
     if (score >= 80) return <Badge variant="secondary">Average</Badge>;
     return <Badge variant="destructive">Needs Improvement</Badge>;
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Worker Management</h1>
+            <p className="text-slate-600 mt-2">Loading workers...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const activeWorkers = workers.filter(w => w.is_active);
+  const avgPerformance = workers.length > 0 
+    ? workers.reduce((acc, w) => acc + parseFloat(getPerformanceScore(w.accuracy, w.productivity)), 0) / workers.length 
+    : 0;
+  const totalOrdersProcessed = workers.reduce((acc, w) => acc + w.orders_processed, 0);
 
   return (
     <div className="space-y-6">
@@ -117,7 +65,7 @@ export const WorkersList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Active Workers</p>
-                <p className="text-2xl font-bold">{mockWorkers.filter(w => w.isActive).length}</p>
+                <p className="text-2xl font-bold">{activeWorkers.length}</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
             </div>
@@ -128,9 +76,7 @@ export const WorkersList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Avg Performance</p>
-                <p className="text-2xl font-bold">
-                  {mockWorkers.reduce((acc, w) => acc + parseFloat(getPerformanceScore(w.performance)), 0) / mockWorkers.length}%
-                </p>
+                <p className="text-2xl font-bold">{avgPerformance.toFixed(1)}%</p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-500" />
             </div>
@@ -141,9 +87,7 @@ export const WorkersList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Orders Processed</p>
-                <p className="text-2xl font-bold">
-                  {mockWorkers.reduce((acc, w) => acc + w.performance.ordersProcessed, 0)}
-                </p>
+                <p className="text-2xl font-bold">{totalOrdersProcessed}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-500" />
             </div>
@@ -166,7 +110,7 @@ export const WorkersList: React.FC = () => {
               <Input
                 placeholder="Search workers by name, email, or position..."
                 value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -191,7 +135,7 @@ export const WorkersList: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredWorkers.map((worker) => {
-                  const performanceScore = parseFloat(getPerformanceScore(worker.performance));
+                  const performanceScore = parseFloat(getPerformanceScore(worker.accuracy, worker.productivity));
                   return (
                     <TableRow key={worker.id} className="hover:bg-slate-50">
                       <TableCell>
@@ -202,23 +146,25 @@ export const WorkersList: React.FC = () => {
                       </TableCell>
                       <TableCell>{worker.position}</TableCell>
                       <TableCell>
-                        <span className="text-sm bg-slate-100 px-2 py-1 rounded">
-                          {worker.shift}
-                        </span>
+                        {worker.shift && (
+                          <span className="text-sm bg-slate-100 px-2 py-1 rounded">
+                            {worker.shift}
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium">{worker.performance.ordersProcessed}</span>
+                        <span className="font-medium">{worker.orders_processed}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium">{worker.performance.accuracy}%</span>
+                        <span className="font-medium">{worker.accuracy}%</span>
                       </TableCell>
                       <TableCell>
                         {getPerformanceBadge(performanceScore)}
                         <p className="text-sm text-slate-600 mt-1">{performanceScore}%</p>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={worker.isActive ? 'default' : 'secondary'}>
-                          {worker.isActive ? 'Active' : 'Inactive'}
+                        <Badge variant={worker.is_active ? 'default' : 'secondary'}>
+                          {worker.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </TableCell>
                     </TableRow>

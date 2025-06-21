@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useWorkers } from '@/hooks/useWorkers';
 
 export const AddWorkerModal: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -16,39 +16,33 @@ export const AddWorkerModal: React.FC = () => {
     email: '',
     position: '',
     shift: '',
-    isActive: true
+    is_active: true
   });
-  const { toast } = useToast();
+  const { createWorker } = useWorkers();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newWorker = {
-      ...formData,
-      id: String(Date.now()),
-      performance: {
-        ordersProcessed: 0,
+    try {
+      await createWorker.mutateAsync({
+        ...formData,
+        orders_processed: 0,
         accuracy: 100,
         productivity: 100
-      }
-    };
-
-    console.log('Adding new worker:', newWorker);
-    
-    toast({
-      title: "Worker Added",
-      description: `${formData.name} has been added to the team.`,
-    });
-    
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      position: '',
-      shift: '',
-      isActive: true
-    });
-    setOpen(false);
+      });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        position: '',
+        shift: '',
+        is_active: true
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding worker:', error);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -129,8 +123,8 @@ export const AddWorkerModal: React.FC = () => {
             <Label htmlFor="isActive">Active Status</Label>
             <Switch
               id="isActive"
-              checked={formData.isActive}
-              onCheckedChange={(checked) => handleInputChange('isActive', checked)}
+              checked={formData.is_active}
+              onCheckedChange={(checked) => handleInputChange('is_active', checked)}
             />
           </div>
           
@@ -138,8 +132,12 @@ export const AddWorkerModal: React.FC = () => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              Add Worker
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={createWorker.isPending}
+            >
+              {createWorker.isPending ? 'Adding...' : 'Add Worker'}
             </Button>
           </div>
         </form>

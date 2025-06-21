@@ -1,17 +1,23 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole } from '@/types';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { SupabaseProfile } from '@/types/supabase';
 
 interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  user: SupabaseUser | null;
+  profile: SupabaseProfile | null;
+  session: Session | null;
+  login: (email: string, password: string) => Promise<{ error: any }>;
+  signup: (email: string, password: string) => Promise<{ error: any }>;
+  logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const rolePermissions: Record<UserRole, string[]> = {
+const rolePermissions: Record<string, string[]> = {
   admin: ['all'],
   warehouse_manager: ['inventory', 'orders', 'layout', 'reports', 'workers'],
   warehouse_staff: ['inventory_update', 'order_processing'],
@@ -19,45 +25,86 @@ const rolePermissions: Record<UserRole, string[]> = {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<SupabaseProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock authentication - in real app this would check JWT
-    const savedUser = localStorage.getItem('wms_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          setProfile(profileData);
+        } else {
+          setProfile(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (!session) {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock login - in real app this would call API
-    const mockUser: User = {
-      id: '1',
-      username: 'admin',
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      role: 'admin',
-      isActive: true,
-      createdAt: new Date().toISOString()
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('wms_user', JSON.stringify(mockUser));
-    return true;
+      password,
+    });
+    return { error };
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('wms_user');
+  const signup = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`
+      }
+    });
+    return { error };
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   const hasPermission = (permission: string): boolean => {
-    if (!user) return false;
-    const userPermissions = rolePermissions[user.role];
+    if (!profile) return false;
+    const userPermissions = rolePermissions[profile.role] || [];
     return userPermissions.includes('all') || userPermissions.includes(permission);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      profile, 
+      session, 
+      login, 
+      signup, 
+      logout, 
+      hasPermission, 
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
