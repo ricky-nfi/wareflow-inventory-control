@@ -6,52 +6,52 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useOrders } from '@/hooks/useOrders';
+import { useWorkers } from '@/hooks/useWorkers';
+import { useInventory } from '@/hooks/useInventory';
 
 interface OrderItem {
-  itemCode: string;
-  itemName: string;
+  item_id: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
 }
 
 export const CreateOrderModal: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [orderType, setOrderType] = useState<'inbound' | 'outbound'>('inbound');
-  const [assignedWorker, setAssignedWorker] = useState('');
+  const [assignedWorkerId, setAssignedWorkerId] = useState('');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
-    { itemCode: '', itemName: '', quantity: 1, unitPrice: 0 }
+    { item_id: '', quantity: 1, unit_price: 0 }
   ]);
-  const { toast } = useToast();
+  const { createOrder } = useOrders();
+  const { workers } = useWorkers();
+  const { items } = useInventory();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newOrder = {
-      orderNumber: `ORD-${String(Date.now()).slice(-6)}`,
-      type: orderType,
-      status: 'pending',
-      items: orderItems.filter(item => item.itemCode && item.itemName),
-      assignedWorker,
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log('Creating new order:', newOrder);
-    
-    toast({
-      title: "Order Created",
-      description: `Order ${newOrder.orderNumber} has been created successfully.`,
-    });
-    
-    // Reset form
-    setOrderType('inbound');
-    setAssignedWorker('');
-    setOrderItems([{ itemCode: '', itemName: '', quantity: 1, unitPrice: 0 }]);
-    setOpen(false);
+    try {
+      const orderNumber = `ORD-${String(Date.now()).slice(-6)}`;
+      
+      await createOrder.mutateAsync({
+        order_number: orderNumber,
+        type: orderType,
+        assigned_worker_id: assignedWorkerId || undefined,
+        items: orderItems.filter(item => item.item_id)
+      });
+      
+      // Reset form
+      setOrderType('inbound');
+      setAssignedWorkerId('');
+      setOrderItems([{ item_id: '', quantity: 1, unit_price: 0 }]);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error creating order:', error);
+    }
   };
 
   const addOrderItem = () => {
-    setOrderItems([...orderItems, { itemCode: '', itemName: '', quantity: 1, unitPrice: 0 }]);
+    setOrderItems([...orderItems, { item_id: '', quantity: 1, unit_price: 0 }]);
   };
 
   const removeOrderItem = (index: number) => {
@@ -98,15 +98,16 @@ export const CreateOrderModal: React.FC = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="assignedWorker">Assigned Worker</Label>
-              <Select value={assignedWorker} onValueChange={setAssignedWorker}>
+              <Select value={assignedWorkerId} onValueChange={setAssignedWorkerId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select worker" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="John Smith">John Smith</SelectItem>
-                  <SelectItem value="Sarah Johnson">Sarah Johnson</SelectItem>
-                  <SelectItem value="Mike Davis">Mike Davis</SelectItem>
-                  <SelectItem value="Lisa Chen">Lisa Chen</SelectItem>
+                  {workers.map((worker) => (
+                    <SelectItem key={worker.id} value={worker.id}>
+                      {worker.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -123,23 +124,29 @@ export const CreateOrderModal: React.FC = () => {
             
             {orderItems.map((item, index) => (
               <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                <div className="col-span-3 space-y-1">
-                  <Label className="text-xs">Item Code</Label>
-                  <Input
-                    value={item.itemCode}
-                    onChange={(e) => updateOrderItem(index, 'itemCode', e.target.value)}
-                    placeholder="ITM-001"
-                    required
-                  />
-                </div>
-                <div className="col-span-4 space-y-1">
-                  <Label className="text-xs">Item Name</Label>
-                  <Input
-                    value={item.itemName}
-                    onChange={(e) => updateOrderItem(index, 'itemName', e.target.value)}
-                    placeholder="Item name"
-                    required
-                  />
+                <div className="col-span-5 space-y-1">
+                  <Label className="text-xs">Item</Label>
+                  <Select
+                    value={item.item_id}
+                    onValueChange={(value) => {
+                      updateOrderItem(index, 'item_id', value);
+                      const selectedItem = items.find(i => i.id === value);
+                      if (selectedItem) {
+                        updateOrderItem(index, 'unit_price', selectedItem.unit_price);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {items.map((inventoryItem) => (
+                        <SelectItem key={inventoryItem.id} value={inventoryItem.id}>
+                          {inventoryItem.item_code} - {inventoryItem.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="col-span-2 space-y-1">
                   <Label className="text-xs">Quantity</Label>
@@ -151,18 +158,18 @@ export const CreateOrderModal: React.FC = () => {
                     required
                   />
                 </div>
-                <div className="col-span-2 space-y-1">
+                <div className="col-span-3 space-y-1">
                   <Label className="text-xs">Unit Price</Label>
                   <Input
                     type="number"
                     step="0.01"
                     min="0"
-                    value={item.unitPrice}
-                    onChange={(e) => updateOrderItem(index, 'unitPrice', parseFloat(e.target.value))}
+                    value={item.unit_price}
+                    onChange={(e) => updateOrderItem(index, 'unit_price', parseFloat(e.target.value))}
                     required
                   />
                 </div>
-                <div className="col-span-1">
+                <div className="col-span-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -181,8 +188,12 @@ export const CreateOrderModal: React.FC = () => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              Create Order
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={createOrder.isPending}
+            >
+              {createOrder.isPending ? 'Creating...' : 'Create Order'}
             </Button>
           </div>
         </form>
