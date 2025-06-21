@@ -45,7 +45,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .eq('id', session.user.id)
             .single();
           
-          setProfile(profileData);
+          if (profileData) {
+            // Cast the role to the proper type
+            setProfile({
+              ...profileData,
+              role: profileData.role as 'admin' | 'warehouse_manager' | 'warehouse_staff' | 'finance'
+            } as SupabaseProfile);
+          }
         } else {
           setProfile(null);
         }
