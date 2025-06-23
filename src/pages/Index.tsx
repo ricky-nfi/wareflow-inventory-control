@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AuthPage } from '@/components/Auth/AuthPage';
@@ -16,14 +15,16 @@ const WMSApp: React.FC = () => {
 
   console.log('WMSApp render - user:', user, 'loading:', loading);
 
+  // Always show loading screen while checking auth state
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="text-lg">Loading...</div>
       </div>
     );
   }
 
+  // Always redirect to login if no user (sessions are cleared on load)
   if (!user) {
     return <AuthPage />;
   }

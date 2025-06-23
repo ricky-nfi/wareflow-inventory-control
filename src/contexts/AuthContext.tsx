@@ -34,7 +34,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
+    // Force clear all sessions on app load
+    const clearSessionsOnLoad = async () => {
+      console.log('Clearing all sessions on app load...');
+      
+      // Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Reset all state
+      if (mounted) {
+        setUser(null);
+        setProfile(null);
+        setSession(null);
+        setLoading(false);
+      }
+    };
+
+    // Clear sessions immediately on mount
+    clearSessionsOnLoad();
+
+    // Set up auth state listener for future login attempts
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session);
@@ -53,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
           
           if (profileData && mounted) {
-            // Cast the role to the proper type
             setProfile({
               ...profileData,
               role: profileData.role as 'admin' | 'warehouse_manager' | 'warehouse_staff' | 'finance'
@@ -70,21 +92,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      // Always set loading to false after initial check
-      setLoading(false);
-      
-      if (session) {
-        // If there's a session, trigger the auth state change manually
-        // to ensure profile is loaded
-        setSession(session);
-        setUser(session.user);
-      }
-    });
 
     return () => {
       mounted = false;
@@ -119,26 +126,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Logout error:', error);
       setLoading(false);
     }
-    // Note: loading will be set to false by the auth state change listener
   };
 
   const clearAllAndReload = async () => {
     console.log('Clearing all session data and reloading...');
     
-    // Clear all local storage
     localStorage.clear();
     sessionStorage.clear();
-    
-    // Sign out from Supabase
     await supabase.auth.signOut();
     
-    // Clear all state
     setUser(null);
     setProfile(null);
     setSession(null);
     setLoading(false);
     
-    // Reload the page
     window.location.reload();
   };
 
