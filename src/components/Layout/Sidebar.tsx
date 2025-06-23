@@ -12,7 +12,8 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Home
+  Home,
+  RotateCcw
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,7 +31,7 @@ const menuItems = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
-  const { user, logout, hasPermission } = useAuth();
+  const { user, logout, clearAllAndReload, hasPermission } = useAuth();
 
   const filteredMenuItems = menuItems.filter(item => 
     item.permission === 'all' || hasPermission(item.permission) || user?.role === 'admin'
@@ -72,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-700">
+      <div className="p-4 border-t border-slate-700 space-y-2">
         <div className="mb-3">
           <p className="text-sm text-slate-400">Signed in as</p>
           <p className="text-white font-medium">{user?.email}</p>
@@ -84,6 +85,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
         >
           <LogOut className="mr-3 h-4 w-4" />
           Sign Out
+        </Button>
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800"
+          onClick={clearAllAndReload}
+        >
+          <RotateCcw className="mr-3 h-4 w-4" />
+          Clear & Reload
         </Button>
       </div>
     </div>

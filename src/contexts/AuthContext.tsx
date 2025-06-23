@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ error: any }>;
   signup: (email: string, password: string) => Promise<{ error: any }>;
   logout: () => Promise<void>;
+  clearAllAndReload: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   loading: boolean;
 }
@@ -121,6 +122,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Note: loading will be set to false by the auth state change listener
   };
 
+  const clearAllAndReload = async () => {
+    console.log('Clearing all session data and reloading...');
+    
+    // Clear all local storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Sign out from Supabase
+    await supabase.auth.signOut();
+    
+    // Clear all state
+    setUser(null);
+    setProfile(null);
+    setSession(null);
+    setLoading(false);
+    
+    // Reload the page
+    window.location.reload();
+  };
+
   const hasPermission = (permission: string): boolean => {
     if (!profile) return false;
     const userPermissions = rolePermissions[profile.role] || [];
@@ -135,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login, 
       signup, 
       logout, 
+      clearAllAndReload,
       hasPermission, 
       loading 
     }}>
