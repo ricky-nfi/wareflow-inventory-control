@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,10 +31,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session);
+        
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -45,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .eq('id', session.user.id)
             .single();
           
-          if (profileData) {
+          if (profileData && mounted) {
             // Cast the role to the proper type
             setProfile({
               ...profileData,
@@ -53,21 +59,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } as SupabaseProfile);
           }
         } else {
-          setProfile(null);
+          if (mounted) {
+            setProfile(null);
+          }
         }
-        setLoading(false);
+        
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setLoading(false);
+      if (!mounted) return;
+      
+      // Always set loading to false after initial check
+      setLoading(false);
+      
+      if (session) {
+        // If there's a session, trigger the auth state change manually
+        // to ensure profile is loaded
+        setSession(session);
+        setUser(session.user);
       }
-      // If there is a session, the auth state change listener will handle it
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
