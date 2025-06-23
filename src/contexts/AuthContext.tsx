@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,11 +61,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
       if (!session) {
         setLoading(false);
       }
+      // If there is a session, the auth state change listener will handle it
     });
 
     return () => subscription.unsubscribe();
@@ -93,16 +91,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     console.log('Logging out...');
+    setLoading(true);
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Logout error:', error);
-    } else {
-      // Clear local state immediately
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      console.log('Logout successful');
+      setLoading(false);
     }
+    // Note: loading will be set to false by the auth state change listener
   };
 
   const hasPermission = (permission: string): boolean => {
