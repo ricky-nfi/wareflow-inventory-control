@@ -14,6 +14,8 @@ const WMSApp: React.FC = () => {
   const { user, loading } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
 
+  console.log('WMSApp render - user:', user, 'loading:', loading);
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
