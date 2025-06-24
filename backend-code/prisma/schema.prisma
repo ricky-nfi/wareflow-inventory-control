@@ -1,0 +1,113 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  username  String?
+  email     String?
+  role      UserRole @default(WAREHOUSE_STAFF)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("profiles")
+}
+
+model InventoryItem {
+  id             String   @id @default(cuid())
+  itemCode       String   @unique @map("item_code")
+  name           String
+  description    String?
+  category       String
+  currentStock   Int      @default(0) @map("current_stock")
+  minStockLevel  Int      @default(0) @map("min_stock_level")
+  unitPrice      Decimal  @default(0) @map("unit_price")
+  location       String
+  method         StockMethod @default(FIFO)
+  lastUpdated    DateTime @default(now()) @map("last_updated")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  orderItems     OrderItem[]
+
+  @@map("inventory_items")
+}
+
+model Worker {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  position        String
+  shift           String?
+  ordersProcessed Int      @default(0) @map("orders_processed")
+  accuracy        Decimal  @default(100)
+  productivity    Decimal  @default(100)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  orders          Order[]
+
+  @@map("workers")
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  orderNumber      String      @unique @map("order_number")
+  type             OrderType
+  status           OrderStatus @default(PENDING)
+  assignedWorkerId String?     @map("assigned_worker_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  assignedWorker   Worker?     @relation(fields: [assignedWorkerId], references: [id])
+  orderItems       OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String   @map("order_id")
+  itemId    String   @map("item_id")
+  quantity  Int
+  unitPrice Decimal  @map("unit_price")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item      InventoryItem @relation(fields: [itemId], references: [id])
+
+  @@map("order_items")
+}
+
+enum UserRole {
+  ADMIN            @map("admin")
+  WAREHOUSE_MANAGER @map("warehouse_manager")
+  WAREHOUSE_STAFF   @map("warehouse_staff")
+  FINANCE          @map("finance")
+}
+
+enum StockMethod {
+  FIFO
+  FEFO
+  LIFO
+}
+
+enum OrderType {
+  INBOUND  @map("inbound")
+  OUTBOUND @map("outbound")
+}
+
+enum OrderStatus {
+  PENDING    @map("pending")
+  PROCESSING @map("processing")
+  COMPLETED  @map("completed")
+  CANCELLED  @map("cancelled")
+}
