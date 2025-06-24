@@ -1,10 +1,12 @@
 
-import { PrismaClient } from '@prisma/client';
+// Prisma client is not used directly in the frontend
+// All database operations go through API calls to the backend server
+// See src/api-examples/ for backend setup instructions
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+// This file is kept for reference but not actively used
+// The actual Prisma client runs on your separate backend server
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prismaNote = `
+This frontend uses API calls to communicate with a separate backend server
+that runs the actual Prisma client. See src/api-examples/ for setup instructions.
+`;

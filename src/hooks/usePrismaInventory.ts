@@ -1,9 +1,10 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { InventoryItem, CreateInventoryItemInput, UpdateInventoryItemInput } from '@/types/prisma';
 
-// This hook will be ready to use once Prisma is properly set up
-// and API endpoints are created to interact with the database
+// API base URL - this should point to your backend server
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 export const usePrismaInventory = () => {
   const { toast } = useToast();
@@ -14,30 +15,33 @@ export const usePrismaInventory = () => {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['inventory'],
-    queryFn: async () => {
-      // This will call your API endpoint that uses Prisma
-      const response = await fetch('/api/inventory');
-      if (!response.ok) throw new Error('Failed to fetch inventory');
+    queryKey: ['prisma-inventory'],
+    queryFn: async (): Promise<InventoryItem[]> => {
+      const response = await fetch(`${API_BASE_URL}/inventory`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch inventory: ${response.statusText}`);
+      }
       return response.json();
     },
   });
 
   const createItem = useMutation({
-    mutationFn: async (item: any) => {
-      const response = await fetch('/api/inventory', {
+    mutationFn: async (item: CreateInventoryItemInput): Promise<InventoryItem> => {
+      const response = await fetch(`${API_BASE_URL}/inventory`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item),
       });
-      if (!response.ok) throw new Error('Failed to create item');
+      if (!response.ok) {
+        throw new Error(`Failed to create item: ${response.statusText}`);
+      }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['prisma-inventory'] });
       toast({
         title: "Item Added",
-        description: "Inventory item has been successfully added.",
+        description: "Inventory item has been successfully added via Prisma API.",
       });
     },
     onError: (error: any) => {
@@ -50,20 +54,47 @@ export const usePrismaInventory = () => {
   });
 
   const updateItem = useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
-      const response = await fetch(`/api/inventory/${id}`, {
+    mutationFn: async ({ id, ...updates }: UpdateInventoryItemInput & { id: string }): Promise<InventoryItem> => {
+      const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
-      if (!response.ok) throw new Error('Failed to update item');
+      if (!response.ok) {
+        throw new Error(`Failed to update item: ${response.statusText}`);
+      }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['prisma-inventory'] });
       toast({
         title: "Item Updated",
-        description: "Inventory item has been successfully updated.",
+        description: "Inventory item has been successfully updated via Prisma API.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteItem = useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to delete item: ${response.statusText}`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prisma-inventory'] });
+      toast({
+        title: "Item Deleted",
+        description: "Inventory item has been successfully deleted.",
       });
     },
     onError: (error: any) => {
@@ -81,5 +112,6 @@ export const usePrismaInventory = () => {
     error,
     createItem,
     updateItem,
+    deleteItem,
   };
 };
