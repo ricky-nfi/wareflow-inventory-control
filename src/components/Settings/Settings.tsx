@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Settings as SettingsIcon, Database, Bell, Users, Shield } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Users, Shield } from 'lucide-react';
 
 export const Settings: React.FC = () => {
   return (
@@ -17,41 +16,6 @@ export const Settings: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Database Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Database className="mr-2 h-5 w-5" />
-              Database Configuration
-            </CardTitle>
-            <CardDescription>Configure database connection settings</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="db-type">Database Type</Label>
-              <Select defaultValue="postgresql">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select database type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="postgresql">PostgreSQL</SelectItem>
-                  <SelectItem value="mysql">MySQL</SelectItem>
-                  <SelectItem value="sqlite">SQLite</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="db-host">Database Host</Label>
-              <Input id="db-host" placeholder="localhost" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="db-port">Port</Label>
-              <Input id="db-port" placeholder="5432" />
-            </div>
-            <Button className="w-full">Test Connection</Button>
-          </CardContent>
-        </Card>
-
         {/* Alert Thresholds */}
         <Card>
           <CardHeader>
