@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
-import { useOrders } from '@/hooks/useOrders';
-import { useWorkers } from '@/hooks/useWorkers';
-import { useInventory } from '@/hooks/useInventory';
+import { usePrismaOrders } from '@/hooks/usePrismaOrders';
+import { usePrismaWorkers } from '@/hooks/usePrismaWorkers';
+import { usePrismaInventory } from '@/hooks/usePrismaInventory';
 
 interface OrderItem {
   item_id: string;
@@ -23,9 +23,9 @@ export const CreateOrderModal: React.FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
     { item_id: '', quantity: 1, unit_price: 0 }
   ]);
-  const { createOrder } = useOrders();
-  const { workers } = useWorkers();
-  const { items } = useInventory();
+  const { createOrder } = usePrismaOrders();
+  const { workers } = usePrismaWorkers();
+  const { items } = usePrismaInventory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

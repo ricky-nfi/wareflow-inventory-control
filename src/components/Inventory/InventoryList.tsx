@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Package, Filter } from 'lucide-react';
 import { AddItemModal } from './AddItemModal';
-import { useInventory } from '@/hooks/useInventory';
+import { usePrismaInventory } from '@/hooks/usePrismaInventory';
 
 export const InventoryList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { items, isLoading, error } = useInventory();
+  const { items, isLoading, error } = usePrismaInventory();
 
   const filteredItems = items.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

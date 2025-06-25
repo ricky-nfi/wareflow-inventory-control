@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Users, Filter, TrendingUp } from 'lucide-react';
 import { AddWorkerModal } from './AddWorkerModal';
-import { useWorkers } from '@/hooks/useWorkers';
+import { usePrismaWorkers } from '@/hooks/usePrismaWorkers';
 
 export const WorkersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { workers, isLoading } = useWorkers();
+  const { workers, isLoading } = usePrismaWorkers();
 
   const filteredWorkers = workers.filter(worker =>
     worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

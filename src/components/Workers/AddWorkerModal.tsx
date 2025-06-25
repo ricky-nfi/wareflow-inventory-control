@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
-import { useWorkers } from '@/hooks/useWorkers';
+import { usePrismaWorkers } from '@/hooks/usePrismaWorkers';
 
 export const AddWorkerModal: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -18,7 +18,7 @@ export const AddWorkerModal: React.FC = () => {
     shift: '',
     is_active: true
   });
-  const { createWorker } = useWorkers();
+  const { createWorker } = usePrismaWorkers();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

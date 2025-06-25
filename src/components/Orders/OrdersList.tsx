@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -5,63 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, ClipboardList, Filter, Truck } from 'lucide-react';
-import { Order } from '@/types';
 import { CreateOrderModal } from './CreateOrderModal';
-
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    orderNumber: 'ORD-001',
-    type: 'inbound',
-    status: 'processing',
-    items: [
-      { itemId: '1', itemCode: 'ITM-001', itemName: 'Industrial Bearings', quantity: 20, unitPrice: 45.99 },
-      { itemId: '2', itemCode: 'ITM-002', itemName: 'Steel Bolts M12', quantity: 100, unitPrice: 0.85 }
-    ],
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-15T11:00:00Z',
-    assignedWorker: 'John Smith'
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-002',
-    type: 'outbound',
-    status: 'pending',
-    items: [
-      { itemId: '3', itemCode: 'ITM-003', itemName: 'Safety Helmets', quantity: 15, unitPrice: 25.50 }
-    ],
-    createdAt: '2024-01-15T09:15:00Z',
-    updatedAt: '2024-01-15T09:15:00Z',
-    assignedWorker: 'Sarah Johnson'
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-003',
-    type: 'inbound',
-    status: 'completed',
-    items: [
-      { itemId: '4', itemCode: 'ITM-004', itemName: 'Work Gloves', quantity: 50, unitPrice: 12.75 },
-      { itemId: '5', itemCode: 'ITM-005', itemName: 'Hydraulic Oil', quantity: 10, unitPrice: 89.99 }
-    ],
-    createdAt: '2024-01-14T16:45:00Z',
-    updatedAt: '2024-01-15T08:30:00Z',
-    assignedWorker: 'Mike Davis'
-  }
-];
+import { usePrismaOrders } from '@/hooks/usePrismaOrders';
 
 export const OrdersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredOrders, setFilteredOrders] = useState(mockOrders);
+  const { orders, isLoading, error } = usePrismaOrders();
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    const filtered = mockOrders.filter(order =>
-      order.orderNumber.toLowerCase().includes(term.toLowerCase()) ||
-      order.assignedWorker?.toLowerCase().includes(term.toLowerCase()) ||
-      order.type.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredOrders(filtered);
-  };
+  const filteredOrders = orders.filter(order =>
+    order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.workers?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -92,9 +48,25 @@ export const OrdersList: React.FC = () => {
     );
   };
 
-  const calculateOrderValue = (items: Order['items']) => {
-    return items.reduce((total, item) => total + (item.quantity * item.unitPrice), 0);
+  const calculateOrderValue = (items: any[]) => {
+    return items.reduce((total, item) => total + (item.quantity * item.unit_price), 0);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-lg">Loading orders...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-lg text-red-600">Error loading orders: {error.message}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -121,7 +93,7 @@ export const OrdersList: React.FC = () => {
               <Input
                 placeholder="Search orders by number, worker, or type..."
                 value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -145,31 +117,41 @@ export const OrdersList: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-slate-50">
-                    <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                    <TableCell>{getTypeBadge(order.type)}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{order.items.length} items</p>
-                        <p className="text-sm text-slate-600">
-                          {order.items.slice(0, 2).map(item => item.itemName).join(', ')}
-                          {order.items.length > 2 && '...'}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium">
-                        ${calculateOrderValue(order.items).toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>{order.assignedWorker}</TableCell>
-                    <TableCell>
-                      {new Date(order.createdAt).toLocaleDateString()}
+                {filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-slate-500 py-8">
+                      No orders found. Create your first order to get started.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id} className="hover:bg-slate-50">
+                      <TableCell className="font-medium">{order.order_number}</TableCell>
+                      <TableCell>{getTypeBadge(order.type)}</TableCell>
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{order.order_items.length} items</p>
+                          <p className="text-sm text-slate-600">
+                            {order.order_items.slice(0, 2).map(item => 
+                              item.inventory_items?.name || `Item ${item.item_id}`
+                            ).join(', ')}
+                            {order.order_items.length > 2 && '...'}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium">
+                          ${calculateOrderValue(order.order_items).toFixed(2)}
+                        </span>
+                      </TableCell>
+                      <TableCell>{order.workers?.name || 'Unassigned'}</TableCell>
+                      <TableCell>
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

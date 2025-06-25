@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { useInventory } from '@/hooks/useInventory';
+import { usePrismaInventory } from '@/hooks/usePrismaInventory';
 
 export const AddItemModal: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -21,7 +21,7 @@ export const AddItemModal: React.FC = () => {
     location: '',
     method: 'FIFO' as 'FIFO' | 'FEFO' | 'LIFO'
   });
-  const { createItem } = useInventory();
+  const { createItem } = usePrismaInventory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
