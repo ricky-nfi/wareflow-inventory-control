@@ -4,7 +4,14 @@ import { useToast } from '@/hooks/use-toast';
 import { InventoryItem, CreateInventoryItemInput, UpdateInventoryItemInput } from '@/types/prisma';
 
 // API base URL - this should point to your backend server
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+
+
+export async function fetchInventory() {
+  const res = await fetch(`${API_BASE_URL}/api/inventory`);
+  if (!res.ok) throw new Error("Failed to fetch inventory");
+  return res.json();
+}
 
 export const usePrismaInventory = () => {
   const { toast } = useToast();
