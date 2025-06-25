@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
 // API base URL - this should point to your backend server
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wms-be-rickys-projects-c4ec1528.vercel.app';
 
 interface PrismaWorker {
   id: string;
@@ -29,24 +29,47 @@ export const usePrismaWorkers = () => {
   } = useQuery({
     queryKey: ['prisma-workers'],
     queryFn: async (): Promise<PrismaWorker[]> => {
-      const response = await fetch(`${API_BASE_URL}/workers`);
+      console.log('Fetching workers from:', `${API_BASE_URL}/workers`);
+      const response = await fetch(`${API_BASE_URL}/workers`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Workers response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`Failed to fetch workers: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Workers fetch error:', errorText);
+        throw new Error(`Failed to fetch workers: ${response.status} ${response.statusText}`);
       }
-      return response.json();
+      
+      const data = await response.json();
+      console.log('Workers data received:', data);
+      return data;
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const createWorker = useMutation({
     mutationFn: async (worker: Omit<PrismaWorker, 'id' | 'created_at'>): Promise<PrismaWorker> => {
+      console.log('Creating worker:', worker);
       const response = await fetch(`${API_BASE_URL}/workers`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(worker),
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to create worker: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Create worker error:', errorText);
+        throw new Error(`Failed to create worker: ${response.status} ${response.statusText}`);
       }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -57,9 +80,10 @@ export const usePrismaWorkers = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Create worker mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create worker",
         variant: "destructive",
       });
     },
@@ -67,14 +91,21 @@ export const usePrismaWorkers = () => {
 
   const updateWorker = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<PrismaWorker> & { id: string }): Promise<PrismaWorker> => {
+      console.log('Updating worker:', id, updates);
       const response = await fetch(`${API_BASE_URL}/workers/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(updates),
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to update worker: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Update worker error:', errorText);
+        throw new Error(`Failed to update worker: ${response.status} ${response.statusText}`);
       }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -85,9 +116,10 @@ export const usePrismaWorkers = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Update worker mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to update worker",
         variant: "destructive",
       });
     },
@@ -95,11 +127,18 @@ export const usePrismaWorkers = () => {
 
   const deleteWorker = useMutation({
     mutationFn: async (id: string): Promise<void> => {
+      console.log('Deleting worker:', id);
       const response = await fetch(`${API_BASE_URL}/workers/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to delete worker: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Delete worker error:', errorText);
+        throw new Error(`Failed to delete worker: ${response.status} ${response.statusText}`);
       }
     },
     onSuccess: () => {
@@ -110,9 +149,10 @@ export const usePrismaWorkers = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Delete worker mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to delete worker",
         variant: "destructive",
       });
     },

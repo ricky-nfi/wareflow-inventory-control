@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
 // API base URL - this should point to your backend server
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wms-be-rickys-projects-c4ec1528.vercel.app';
 
 interface PrismaOrderItem {
   id?: string;
@@ -41,12 +41,28 @@ export const usePrismaOrders = () => {
   } = useQuery({
     queryKey: ['prisma-orders'],
     queryFn: async (): Promise<PrismaOrder[]> => {
-      const response = await fetch(`${API_BASE_URL}/orders`);
+      console.log('Fetching orders from:', `${API_BASE_URL}/orders`);
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Orders response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`Failed to fetch orders: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Orders fetch error:', errorText);
+        throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}`);
       }
-      return response.json();
+      
+      const data = await response.json();
+      console.log('Orders data received:', data);
+      return data;
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const createOrder = useMutation({
@@ -60,14 +76,21 @@ export const usePrismaOrders = () => {
         unit_price: number;
       }>;
     }): Promise<PrismaOrder> => {
+      console.log('Creating order:', order);
       const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(order),
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to create order: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Create order error:', errorText);
+        throw new Error(`Failed to create order: ${response.status} ${response.statusText}`);
       }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -78,9 +101,10 @@ export const usePrismaOrders = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Create order mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create order",
         variant: "destructive",
       });
     },
@@ -88,14 +112,21 @@ export const usePrismaOrders = () => {
 
   const updateOrder = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<PrismaOrder> & { id: string }): Promise<PrismaOrder> => {
+      console.log('Updating order:', id, updates);
       const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(updates),
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to update order: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Update order error:', errorText);
+        throw new Error(`Failed to update order: ${response.status} ${response.statusText}`);
       }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -106,9 +137,10 @@ export const usePrismaOrders = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Update order mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to update order",
         variant: "destructive",
       });
     },
@@ -116,11 +148,18 @@ export const usePrismaOrders = () => {
 
   const deleteOrder = useMutation({
     mutationFn: async (id: string): Promise<void> => {
+      console.log('Deleting order:', id);
       const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to delete order: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Delete order error:', errorText);
+        throw new Error(`Failed to delete order: ${response.status} ${response.statusText}`);
       }
     },
     onSuccess: () => {
@@ -131,9 +170,10 @@ export const usePrismaOrders = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Delete order mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to delete order",
         variant: "destructive",
       });
     },

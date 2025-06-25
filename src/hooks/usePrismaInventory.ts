@@ -6,9 +6,8 @@ import { InventoryItem, CreateInventoryItemInput, UpdateInventoryItemInput } fro
 // API base URL - this should point to your backend server
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wms-be-rickys-projects-c4ec1528.vercel.app';
 
-
 export async function fetchInventory() {
-  const res = await fetch(`${API_BASE_URL}/api/inventory`);
+  const res = await fetch(`${API_BASE_URL}/inventory`);
   if (!res.ok) throw new Error("Failed to fetch inventory");
   return res.json();
 }
@@ -24,24 +23,47 @@ export const usePrismaInventory = () => {
   } = useQuery({
     queryKey: ['prisma-inventory'],
     queryFn: async (): Promise<InventoryItem[]> => {
-      const response = await fetch(`${API_BASE_URL}/inventory`);
+      console.log('Fetching inventory from:', `${API_BASE_URL}/inventory`);
+      const response = await fetch(`${API_BASE_URL}/inventory`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Inventory response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`Failed to fetch inventory: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Inventory fetch error:', errorText);
+        throw new Error(`Failed to fetch inventory: ${response.status} ${response.statusText}`);
       }
-      return response.json();
+      
+      const data = await response.json();
+      console.log('Inventory data received:', data);
+      return data;
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const createItem = useMutation({
     mutationFn: async (item: CreateInventoryItemInput): Promise<InventoryItem> => {
+      console.log('Creating inventory item:', item);
       const response = await fetch(`${API_BASE_URL}/inventory`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(item),
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to create item: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Create item error:', errorText);
+        throw new Error(`Failed to create item: ${response.status} ${response.statusText}`);
       }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -52,9 +74,10 @@ export const usePrismaInventory = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Create item mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create inventory item",
         variant: "destructive",
       });
     },
@@ -62,14 +85,21 @@ export const usePrismaInventory = () => {
 
   const updateItem = useMutation({
     mutationFn: async ({ id, ...updates }: UpdateInventoryItemInput & { id: string }): Promise<InventoryItem> => {
+      console.log('Updating inventory item:', id, updates);
       const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(updates),
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to update item: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Update item error:', errorText);
+        throw new Error(`Failed to update item: ${response.status} ${response.statusText}`);
       }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -80,9 +110,10 @@ export const usePrismaInventory = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Update item mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to update inventory item",
         variant: "destructive",
       });
     },
@@ -90,11 +121,18 @@ export const usePrismaInventory = () => {
 
   const deleteItem = useMutation({
     mutationFn: async (id: string): Promise<void> => {
+      console.log('Deleting inventory item:', id);
       const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      
       if (!response.ok) {
-        throw new Error(`Failed to delete item: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Delete item error:', errorText);
+        throw new Error(`Failed to delete item: ${response.status} ${response.statusText}`);
       }
     },
     onSuccess: () => {
@@ -105,9 +143,10 @@ export const usePrismaInventory = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Delete item mutation error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to delete inventory item",
         variant: "destructive",
       });
     },
