@@ -11,13 +11,13 @@ import { usePrismaInventory } from '@/hooks/usePrismaInventory';
 export const AddItemModal: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    item_code: '',
+    itemCode: '',
     name: '',
     description: '',
     category: '',
-    current_stock: '',
-    min_stock_level: '',
-    unit_price: '',
+    currentStock: '',
+    minStockLevel: '',
+    unitPrice: '',
     location: '',
     method: 'FIFO' as 'FIFO' | 'FEFO' | 'LIFO'
   });
@@ -28,26 +28,26 @@ export const AddItemModal: React.FC = () => {
     
     try {
       await createItem.mutateAsync({
-        item_code: formData.item_code,
+        itemCode: formData.itemCode,
         name: formData.name,
-        description: formData.description || null,
+        description: formData.description || undefined,
         category: formData.category,
-        current_stock: parseInt(formData.current_stock),
-        min_stock_level: parseInt(formData.min_stock_level),
-        unit_price: parseFloat(formData.unit_price),
+        currentStock: parseInt(formData.currentStock),
+        minStockLevel: parseInt(formData.minStockLevel),
+        unitPrice: parseFloat(formData.unitPrice),
         location: formData.location,
         method: formData.method
       });
       
       // Reset form
       setFormData({
-        item_code: '',
+        itemCode: '',
         name: '',
         description: '',
         category: '',
-        current_stock: '',
-        min_stock_level: '',
-        unit_price: '',
+        currentStock: '',
+        minStockLevel: '',
+        unitPrice: '',
         location: '',
         method: 'FIFO'
       });
@@ -79,11 +79,11 @@ export const AddItemModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="item_code">Item Code</Label>
+              <Label htmlFor="itemCode">Item Code</Label>
               <Input
-                id="item_code"
-                value={formData.item_code}
-                onChange={(e) => handleInputChange('item_code', e.target.value)}
+                id="itemCode"
+                value={formData.itemCode}
+                onChange={(e) => handleInputChange('itemCode', e.target.value)}
                 placeholder="ITM-001"
                 required
               />
@@ -138,35 +138,35 @@ export const AddItemModal: React.FC = () => {
           
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="current_stock">Current Stock</Label>
+              <Label htmlFor="currentStock">Current Stock</Label>
               <Input
-                id="current_stock"
+                id="currentStock"
                 type="number"
-                value={formData.current_stock}
-                onChange={(e) => handleInputChange('current_stock', e.target.value)}
+                value={formData.currentStock}
+                onChange={(e) => handleInputChange('currentStock', e.target.value)}
                 placeholder="0"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="min_stock_level">Min Stock Level</Label>
+              <Label htmlFor="minStockLevel">Min Stock Level</Label>
               <Input
-                id="min_stock_level"
+                id="minStockLevel"
                 type="number"
-                value={formData.min_stock_level}
-                onChange={(e) => handleInputChange('min_stock_level', e.target.value)}
+                value={formData.minStockLevel}
+                onChange={(e) => handleInputChange('minStockLevel', e.target.value)}
                 placeholder="10"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit_price">Unit Price ($)</Label>
+              <Label htmlFor="unitPrice">Unit Price ($)</Label>
               <Input
-                id="unit_price"
+                id="unitPrice"
                 type="number"
                 step="0.01"
-                value={formData.unit_price}
-                onChange={(e) => handleInputChange('unit_price', e.target.value)}
+                value={formData.unitPrice}
+                onChange={(e) => handleInputChange('unitPrice', e.target.value)}
                 placeholder="0.00"
                 required
               />

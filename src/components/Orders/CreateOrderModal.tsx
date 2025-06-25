@@ -132,7 +132,7 @@ export const CreateOrderModal: React.FC = () => {
                       updateOrderItem(index, 'item_id', value);
                       const selectedItem = items.find(i => i.id === value);
                       if (selectedItem) {
-                        updateOrderItem(index, 'unit_price', selectedItem.unit_price);
+                        updateOrderItem(index, 'unit_price', selectedItem.unitPrice);
                       }
                     }}
                   >
@@ -142,7 +142,7 @@ export const CreateOrderModal: React.FC = () => {
                     <SelectContent>
                       {items.map((inventoryItem) => (
                         <SelectItem key={inventoryItem.id} value={inventoryItem.id}>
-                          {inventoryItem.item_code} - {inventoryItem.name}
+                          {inventoryItem.itemCode} - {inventoryItem.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

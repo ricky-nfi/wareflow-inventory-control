@@ -15,7 +15,7 @@ export const InventoryList: React.FC = () => {
 
   const filteredItems = items.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.item_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.itemCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -110,10 +110,10 @@ export const InventoryList: React.FC = () => {
                   </TableRow>
                 ) : (
                   filteredItems.map((item) => {
-                    const stockStatus = getStockStatus(item.current_stock, item.min_stock_level);
+                    const stockStatus = getStockStatus(item.currentStock, item.minStockLevel);
                     return (
                       <TableRow key={item.id} className="hover:bg-slate-50">
-                        <TableCell className="font-medium">{item.item_code}</TableCell>
+                        <TableCell className="font-medium">{item.itemCode}</TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{item.name}</p>
@@ -124,11 +124,11 @@ export const InventoryList: React.FC = () => {
                         <TableCell>
                           <span className={stockStatus === 'critical' ? 'text-red-600 font-semibold' : 
                                          stockStatus === 'low' ? 'text-orange-600 font-semibold' : 'text-green-600'}>
-                            {item.current_stock}
+                            {item.currentStock}
                           </span>
                         </TableCell>
-                        <TableCell>{item.min_stock_level}</TableCell>
-                        <TableCell>${item.unit_price}</TableCell>
+                        <TableCell>{item.minStockLevel}</TableCell>
+                        <TableCell>${item.unitPrice}</TableCell>
                         <TableCell>
                           <code className="bg-slate-100 px-2 py-1 rounded text-sm">{item.location}</code>
                         </TableCell>
