@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { InventoryItem, CreateInventoryItemInput, UpdateInventoryItemInput } from '@/types/prisma';
 
 // API base URL - this should point to your backend server
-const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wms-be-rickys-projects-c4ec1528.vercel.app';
 
 
 export async function fetchInventory() {
