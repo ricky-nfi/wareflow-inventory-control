@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
-import { usePrismaOrders } from '@/hooks/usePrismaOrders';
-import { usePrismaWorkers } from '@/hooks/usePrismaWorkers';
-import { usePrismaInventory } from '@/hooks/usePrismaInventory';
+import { useOrders } from '@/hooks/useOrders';
+import { useWorkers } from '@/hooks/useWorkers';
+import { useInventory } from '@/hooks/useInventory';
 
 interface OrderItem {
   item_id: string;
@@ -23,9 +23,9 @@ export const CreateOrderModal: React.FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
     { item_id: '', quantity: 1, unit_price: 0 }
   ]);
-  const { createOrder } = usePrismaOrders();
-  const { workers } = usePrismaWorkers();
-  const { items } = usePrismaInventory();
+  const { createOrder } = useOrders();
+  const { workers } = useWorkers();
+  const { items } = useInventory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +132,7 @@ export const CreateOrderModal: React.FC = () => {
                       updateOrderItem(index, 'item_id', value);
                       const selectedItem = items.find(i => i.id === value);
                       if (selectedItem) {
-                        updateOrderItem(index, 'unit_price', selectedItem.unitPrice);
+                        updateOrderItem(index, 'unit_price', selectedItem.unit_price);
                       }
                     }}
                   >
@@ -142,7 +142,7 @@ export const CreateOrderModal: React.FC = () => {
                     <SelectContent>
                       {items.map((inventoryItem) => (
                         <SelectItem key={inventoryItem.id} value={inventoryItem.id}>
-                          {inventoryItem.itemCode} - {inventoryItem.name}
+                          {inventoryItem.item_code} - {inventoryItem.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

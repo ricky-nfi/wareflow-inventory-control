@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, ClipboardList, Filter, Truck } from 'lucide-react';
 import { CreateOrderModal } from './CreateOrderModal';
-import { usePrismaOrders } from '@/hooks/usePrismaOrders';
+import { useOrders } from '@/hooks/useOrders';
 
 export const OrdersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { orders, isLoading, error } = usePrismaOrders();
+  const { orders, isLoading, error } = useOrders();
 
   const filteredOrders = orders.filter(order =>
     order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,26 +128,26 @@ export const OrdersList: React.FC = () => {
                     <TableRow key={order.id} className="hover:bg-slate-50">
                       <TableCell className="font-medium">{order.order_number}</TableCell>
                       <TableCell>{getTypeBadge(order.type)}</TableCell>
-                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>{getStatusBadge(order.status || 'pending')}</TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{order.order_items.length} items</p>
+                          <p className="font-medium">{order.order_items?.length || 0} items</p>
                           <p className="text-sm text-slate-600">
-                            {order.order_items.slice(0, 2).map(item => 
+                            {order.order_items?.slice(0, 2).map(item => 
                               item.inventory_items?.name || `Item ${item.item_id}`
                             ).join(', ')}
-                            {order.order_items.length > 2 && '...'}
+                            {(order.order_items?.length || 0) > 2 && '...'}
                           </p>
                         </div>
                       </TableCell>
                       <TableCell>
                         <span className="font-medium">
-                          ${calculateOrderValue(order.order_items).toFixed(2)}
+                          ${calculateOrderValue(order.order_items || []).toFixed(2)}
                         </span>
                       </TableCell>
                       <TableCell>{order.workers?.name || 'Unassigned'}</TableCell>
                       <TableCell>
-                        {new Date(order.created_at).toLocaleDateString()}
+                        {new Date(order.created_at || '').toLocaleDateString()}
                       </TableCell>
                     </TableRow>
                   ))

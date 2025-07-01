@@ -6,48 +6,48 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { usePrismaInventory } from '@/hooks/usePrismaInventory';
+import { useInventory } from '@/hooks/useInventory';
 
 export const AddItemModal: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    itemCode: '',
+    item_code: '',
     name: '',
     description: '',
     category: '',
-    currentStock: '',
-    minStockLevel: '',
-    unitPrice: '',
+    current_stock: '',
+    min_stock_level: '',
+    unit_price: '',
     location: '',
     method: 'FIFO' as 'FIFO' | 'FEFO' | 'LIFO'
   });
-  const { createItem } = usePrismaInventory();
+  const { createItem } = useInventory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       await createItem.mutateAsync({
-        itemCode: formData.itemCode,
+        item_code: formData.item_code,
         name: formData.name,
-        description: formData.description || undefined,
+        description: formData.description || null,
         category: formData.category,
-        currentStock: parseInt(formData.currentStock),
-        minStockLevel: parseInt(formData.minStockLevel),
-        unitPrice: parseFloat(formData.unitPrice),
+        current_stock: parseInt(formData.current_stock),
+        min_stock_level: parseInt(formData.min_stock_level),
+        unit_price: parseFloat(formData.unit_price),
         location: formData.location,
         method: formData.method
       });
       
       // Reset form
       setFormData({
-        itemCode: '',
+        item_code: '',
         name: '',
         description: '',
         category: '',
-        currentStock: '',
-        minStockLevel: '',
-        unitPrice: '',
+        current_stock: '',
+        min_stock_level: '',
+        unit_price: '',
         location: '',
         method: 'FIFO'
       });
@@ -79,11 +79,11 @@ export const AddItemModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="itemCode">Item Code</Label>
+              <Label htmlFor="item_code">Item Code</Label>
               <Input
-                id="itemCode"
-                value={formData.itemCode}
-                onChange={(e) => handleInputChange('itemCode', e.target.value)}
+                id="item_code"
+                value={formData.item_code}
+                onChange={(e) => handleInputChange('item_code', e.target.value)}
                 placeholder="ITM-001"
                 required
               />
@@ -138,35 +138,35 @@ export const AddItemModal: React.FC = () => {
           
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="currentStock">Current Stock</Label>
+              <Label htmlFor="current_stock">Current Stock</Label>
               <Input
-                id="currentStock"
+                id="current_stock"
                 type="number"
-                value={formData.currentStock}
-                onChange={(e) => handleInputChange('currentStock', e.target.value)}
+                value={formData.current_stock}
+                onChange={(e) => handleInputChange('current_stock', e.target.value)}
                 placeholder="0"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="minStockLevel">Min Stock Level</Label>
+              <Label htmlFor="min_stock_level">Min Stock Level</Label>
               <Input
-                id="minStockLevel"
+                id="min_stock_level"
                 type="number"
-                value={formData.minStockLevel}
-                onChange={(e) => handleInputChange('minStockLevel', e.target.value)}
+                value={formData.min_stock_level}
+                onChange={(e) => handleInputChange('min_stock_level', e.target.value)}
                 placeholder="10"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unitPrice">Unit Price ($)</Label>
+              <Label htmlFor="unit_price">Unit Price ($)</Label>
               <Input
-                id="unitPrice"
+                id="unit_price"
                 type="number"
                 step="0.01"
-                value={formData.unitPrice}
-                onChange={(e) => handleInputChange('unitPrice', e.target.value)}
+                value={formData.unit_price}
+                onChange={(e) => handleInputChange('unit_price', e.target.value)}
                 placeholder="0.00"
                 required
               />

@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Users, Filter, TrendingUp } from 'lucide-react';
 import { AddWorkerModal } from './AddWorkerModal';
-import { usePrismaWorkers } from '@/hooks/usePrismaWorkers';
+import { useWorkers } from '@/hooks/useWorkers';
 
 export const WorkersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { workers, isLoading } = usePrismaWorkers();
+  const { workers, isLoading } = useWorkers();
 
   const filteredWorkers = workers.filter(worker =>
     worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,9 +45,9 @@ export const WorkersList: React.FC = () => {
 
   const activeWorkers = workers.filter(w => w.is_active);
   const avgPerformance = workers.length > 0 
-    ? workers.reduce((acc, w) => acc + parseFloat(getPerformanceScore(w.accuracy, w.productivity)), 0) / workers.length 
+    ? workers.reduce((acc, w) => acc + parseFloat(getPerformanceScore(w.accuracy || 100, w.productivity || 100)), 0) / workers.length 
     : 0;
-  const totalOrdersProcessed = workers.reduce((acc, w) => acc + w.orders_processed, 0);
+  const totalOrdersProcessed = workers.reduce((acc, w) => acc + (w.orders_processed || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -135,7 +135,7 @@ export const WorkersList: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredWorkers.map((worker) => {
-                  const performanceScore = parseFloat(getPerformanceScore(worker.accuracy, worker.productivity));
+                  const performanceScore = parseFloat(getPerformanceScore(worker.accuracy || 100, worker.productivity || 100));
                   return (
                     <TableRow key={worker.id} className="hover:bg-slate-50">
                       <TableCell>
@@ -153,10 +153,10 @@ export const WorkersList: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium">{worker.orders_processed}</span>
+                        <span className="font-medium">{worker.orders_processed || 0}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium">{worker.accuracy}%</span>
+                        <span className="font-medium">{worker.accuracy || 100}%</span>
                       </TableCell>
                       <TableCell>
                         {getPerformanceBadge(performanceScore)}
