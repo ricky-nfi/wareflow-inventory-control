@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { InventoryItem, CreateInventoryItemInput, UpdateInventoryItemInput } from '@/types/prisma';
 
-// API base URL - this should point to your backend server
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wms-be-rickys-projects-c4ec1528.vercel.app';
+// API base URL - pointing to Vercel backend
+const API_BASE_URL = 'https://wms-be-rickys-projects-c4ec1528.vercel.app/api';
 
 export async function fetchInventory() {
   const res = await fetch(`${API_BASE_URL}/inventory`);

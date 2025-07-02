@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, ClipboardList, Filter, Truck } from 'lucide-react';
 import { CreateOrderModal } from './CreateOrderModal';
-import { useOrders } from '@/hooks/useOrders';
+import { usePrismaOrders } from '@/hooks/usePrismaOrders';
 
 export const OrdersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { orders, isLoading, error } = useOrders();
+  const { orders, isLoading, error } = usePrismaOrders();
 
   const filteredOrders = orders.filter(order =>
     order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||

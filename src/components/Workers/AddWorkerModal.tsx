@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
-import { useWorkers } from '@/hooks/useWorkers';
+import { usePrismaWorkers } from '@/hooks/usePrismaWorkers';
 
 export const AddWorkerModal: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -16,17 +16,20 @@ export const AddWorkerModal: React.FC = () => {
     email: '',
     position: '',
     shift: '',
-    is_active: true
+    isActive: true
   });
-  const { createWorker } = useWorkers();
+  const { createWorker } = usePrismaWorkers();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       await createWorker.mutateAsync({
-        ...formData,
+        name: formData.name,
+        email: formData.email,
+        position: formData.position,
         shift: formData.shift || null,
+        is_active: formData.isActive,
         orders_processed: 0,
         accuracy: 100,
         productivity: 100
@@ -38,7 +41,7 @@ export const AddWorkerModal: React.FC = () => {
         email: '',
         position: '',
         shift: '',
-        is_active: true
+        isActive: true
       });
       setOpen(false);
     } catch (error) {
@@ -124,8 +127,8 @@ export const AddWorkerModal: React.FC = () => {
             <Label htmlFor="isActive">Active Status</Label>
             <Switch
               id="isActive"
-              checked={formData.is_active}
-              onCheckedChange={(checked) => handleInputChange('is_active', checked)}
+              checked={formData.isActive}
+              onCheckedChange={(checked) => handleInputChange('isActive', checked)}
             />
           </div>
           
